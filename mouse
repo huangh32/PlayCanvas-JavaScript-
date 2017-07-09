@@ -1,0 +1,212 @@
+var Mouse = pc.createScript('mouse');
+
+// initialize code called once per entity
+Mouse.prototype.initialize = function() {
+     this.pos = new pc.Vec3();
+    this.target=new pc.Vec3();
+    
+    this.entity = this.app.root.findByName('Ball');
+    var Ball=this.app.root.findByName('Ball');
+    //this.entity=entity;
+     this.cameraEntity = this.app.root.findByName("Camera");
+    
+    //for collision puck
+  //  this.entity.collision.on('contact',this.onContact,this);
+   // var puck=this.app.root.findByName("puck");
+//     var MAX_VEL=0.0001;
+//     var vel=this.entity.rigidbody.linearVelocity;
+//     vel.normalize().scale(MAX_VEL);
+//     this.entity.rigidbody.linearVelocity=vel;
+    
+//     //force
+//     force.set(1,0,0);
+//     this.entity.rigidbody.applyForce(force);
+    Ball.rigidbody.body.setCcdMotionThreshold(0.0001);
+    Ball.rigidbody.body.setCcdSweptSphereRadius(0.50);
+    /////////////////////////////////////////////////
+     this.app.mouse.on(pc.input.EVENT_MOUSEDOWN, this.onMouseDown, this);
+     this.app.mouse.on(pc.input.EVENT_MOUSEUP,this.onMouseUp,this);
+     
+    
+     var touch = this.app.touch;
+     if (touch) {
+        touch.on(pc.EVENT_TOUCHSTART, this.onTouchStart, this);
+        touch.on(pc.EVENT_TOUCHGO, this.onTouchGO, this);
+        touch.on(pc.EVENT_TOUCHMOVE, this.onTouchMove, this);
+        //touch.on(pc.EVENT_TOUCHEND, this.onTouchEnd, this);
+       // touch.on(pc.EVENT_TOUCHCANCEL, this.onTouchCancel, this);
+    }
+    
+    // this.app.mouse.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
+};
+
+
+
+Mouse.prototype.updateFromScreen = function (screenPos) {
+    // Use the camera component's screenToWorld function to convert the 
+    // position of the mouse into a position in 3D space
+    var depth = 20;
+    
+    this.cameraEntity.camera.screenToWorld(screenPos.x, screenPos.y, depth, this.pos);
+
+    // Finally update the cube's world-space position
+    this.entity.setPosition(this.pos);    
+};
+
+// Mouse.prototype.finddestination=function(x){
+//     this.pos=new pc.Vec();
+    
+// };
+
+// Mouse.prototype.onTouchStart=function(event){
+//   if(event.touches.length==1){
+//       this.doRayCast(event.touches[0]);
+//       event.event.preventDefault();
+//   }  
+// };
+
+
+Mouse.prototype.onTouchMove = function (event1) {
+    // Use only the first touch screen x y position to move the entity
+    // if(event1.button==pc.MOUSEBUTTON_LEFT){
+    //     this.doRayCast(event1);
+    // }
+    this.updateFromScreen(event1.touches[0]);
+};
+
+
+//update code called every frame
+// Mouse.prototype.onTouchGO = function(event) {
+//     var dev=20;
+//     if(this.entity.infield===0&&event.dy<0){
+//         event.dy=0;
+//     }
+//     position=this.entity.getLocalPosition();
+//     position.x=position.x+event.dx/dev;
+//     position.z=position.z+event.dy/dev;
+//     this.entity.last_touch=event;
+//     this.entity.last_pos=position;
+//     this.entity.setPosition(position);
+//     var Velocity=this.entity.rigidbody.linearVelocity;
+//     console.log(Velocity);
+    
+// };
+
+// Mouse.prototype.onContact=function(result){
+//     if(result.other.getName()==='puck'){}
+    
+// };
+
+// Mouse.ray= new pc.Ray();
+// Mouse.hitPosition=new pc.Vec3();
+
+// Mouse.prototype.doRayCast=function(screenPosition){
+//     var ray=Mouse.ray;
+//     var hitPosition=Mouse.hitPosition;
+    
+//     this.cameraEntity.camera.screenToWorld(screenPosition.x,screenPosition.y,this.cameraEntity.camera.farClip,ray.direction);
+//     ray.origin.copy(this.cameraEntity.getPosition());
+//     ray.direction.sub(ray.origion).normalize();
+    
+//     entity.setPositoin(hitPosition);
+    
+// };
+
+
+Mouse.prototype.onMouseDown=function(event){
+      this.entity = this.app.root.findByName('Ball');
+  if(event.button===pc.input.MOUSEBUTTON_LEFT){
+      //this.doRayCast(event);
+      //this.entity.rigidbody.applyImpulse(0,0,1.5);
+      var hit=this.entity.getPosition();
+      this.target=hit;
+      console.log(hit);
+     
+      
+  }  
+};
+
+
+Mouse.prototype.onMouseUp=function(event){
+    var xdirection=0;
+    var zdirection=0;
+    this.xdirection = xdirection;
+    this.zdirection = zdirection;
+    //this.pos = new pc.Vec3();
+    
+    
+    if((this.target.x>this.pos.x)&&(this.target.z-this.pos.z===0)){
+        xdirection=Math.abs(this.target.x-this.pos.x)+2*this.xdirection;
+        zdirection=0;
+        this.xdirection = xdirection;
+        this.zdirection = zdirection;
+    }
+    else if((this.target.x<this.pos.x)&&(this.target.z-this.pos.z===0)){
+        xdirection=Math.abs(this.target.x-this.pos.x)+2*this.xdirection;
+        zdirection=0;
+        this.xdirection = xdirection;
+        this.zdirection = zdirection;
+    }
+    else if((this.target.z>this.pos.z)&&(this.target.x-this.pos.x===0)){
+        xdirection=0;
+        zdirection=Math.abs(this.target.z-this.pos.z)+2*this.zdirection;
+        this.xdirection = xdirection;
+        this.zdirection = zdirection;
+    }
+    else if((this.target.z<this.pos.z)&&(this.target.x-this.pos.x===0)){
+        xdirection=0;
+        zdirection=Math.abs(this.target.z-this.pos.z)+2*this.zdirection;
+        this.xdirection = xdirection;
+        this.zdirection = zdirection;
+    }
+    else {//if(Math.abs(this.target.x-this.pos.x)>Math.abs(this.target.z-this.pos.z)){
+        xdirection=2*Math.abs(this.target.x-this.pos.x);//+8*this.xdirection;
+        zdirection=1.5*Math.abs(this.target.z-this.pos.z);//+2*this.zdirection;
+        this.xdirection = xdirection;
+        this.zdirection = zdirection;
+    }
+    // else if((this.target.x-this.pos.x>0)&&(this.target.z-this.pos.z>0)){
+    //     if((this.target.x-this.pos.x)>(this.target.z-this.pos.z)){
+    //     xdirection=5;
+    //     zdirection=2;
+    //     }
+    //     else if(())
+    // }
+
+    // else if(Math.abs(this.target.z-this.pos.z)>Math.abs(this.target.x-this.pos.x)){
+    //     xdirection=2;
+    //     zdirection=1;
+    // }
+   
+   // this.entity=this.app.root.findByName('Ball');
+    if(event.button===pc.input.MOUSEBUTTON_LEFT){
+       //this.entity.setPosition(0,3,1);
+        //this.entity.rigidbody.applyImpulse(3,3,3);
+        //
+        //
+        if((this.target.x-this.pos.x)>=0&&(this.target.z-this.pos.z)<=0){
+            this.entity.rigidbody.applyImpulse(xdirection,0,-zdirection);
+        }
+        else if((this.target.x-this.pos.x)<=0&&(this.target.z-this.pos.z)>=0) {
+            this.entity.rigidbody.applyImpulse(-xdirection,0,zdirection);
+        }
+        else if((this.target.x-this.pos.x)<0&&(this.target.z-this.pos.z)<0){
+            this.entity.rigidbody.applyImpulse(-xdirection,0,-zdirection);
+        }
+        else if((this.target.x-this.pos.x)>0&&(this.target.z-this.pos.z)>0)
+            {
+                this.entity.rigidbody.applyImpulse(xdirection,0,zdirection);
+            }
+       // this.entity.rigidbody.applyImpulse(xdirection,0,zdirection);
+     }
+    
+    
+    this.pos.x=this.target.x;
+    this.pos.z=this.target.z;
+    this.pos.y=0;
+    
+};
+
+
+
+
